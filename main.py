@@ -20,7 +20,11 @@ try:
 except ImportError:
     pass  # dotenv not available, using hardcoded defaults
 
-app = Flask(__name__, static_folder="static", static_url_path="/", instance_relative_config=False)
+# Create Flask app with explicit instance_path to avoid conflicts
+app = Flask(__name__, 
+            static_folder="static", 
+            static_url_path="/",
+            instance_path="/tmp/flask_instance")
 CORS(app)
 
 # Configure the database - use deployment-relative path for persistence
@@ -84,6 +88,3 @@ with app.app_context():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
-
-
-
