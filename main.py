@@ -20,7 +20,7 @@ try:
 except ImportError:
     pass  # dotenv not available, using hardcoded defaults
 
-app = Flask(__name__, static_folder="static", static_url_path="/")
+app = Flask(__name__, static_folder="static", static_url_path="/", instance_relative_config=False)
 CORS(app)
 
 # Configure the database - use deployment-relative path for persistence
@@ -31,6 +31,7 @@ if not os.path.exists(database_path):
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(database_path, 'app.db')}"
 print(f"Database path: {os.path.join(database_path, 'app.db')}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 db.init_app(app)
 
 # Import models after db is defined to avoid circular imports
@@ -59,7 +60,7 @@ app.register_blueprint(email_improved_bp, url_prefix="/api/email")
 
 def create_tables_and_initial_data():
     db.create_all()
-    # Add initial session types if they don\'t exist
+    # Add initial session types if they don't exist
     if not SessionType.query.first():
         initial_session_types = [
             SessionType(name="French Tutoring", duration_minutes=60, price=50.00),
@@ -83,5 +84,6 @@ with app.app_context():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
+
 
 
