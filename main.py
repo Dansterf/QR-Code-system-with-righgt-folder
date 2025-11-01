@@ -3,9 +3,9 @@ import os
 
 # Environment variables will be loaded from Railway or .env file
 # No hardcoded credentials for security
-# Set defaults only for non-sensitive values
+# Set defaults only for non-sensitive values - use /tmp for Railway compatibility
 if not os.environ.get("QR_CHECKIN_DB_PATH"):
-    os.environ["QR_CHECKIN_DB_PATH"] = "./data"
+    os.environ["QR_CHECKIN_DB_PATH"] = "/tmp/data"
 if not os.environ.get("QB_ENVIRONMENT"):
     os.environ["QB_ENVIRONMENT"] = "production"
 
@@ -27,11 +27,10 @@ app = Flask(__name__,
             instance_path="/tmp/flask_instance")
 CORS(app)
 
-# Configure the database - use deployment-relative path for persistence
-# In deployment, this will be in the container's writable storage
-database_path = os.environ.get("QR_CHECKIN_DB_PATH", "./data")
+# Configure the database - use /tmp for Railway (always writable)
+database_path = os.environ.get("QR_CHECKIN_DB_PATH", "/tmp/data")
 if not os.path.exists(database_path):
-    os.makedirs(database_path)
+    os.makedirs(database_path, exist_ok=True)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(database_path, 'app.db')}"
 print(f"Database path: {os.path.join(database_path, 'app.db')}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
